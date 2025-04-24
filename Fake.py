@@ -87,12 +87,12 @@ data_queries = {
     #    'columns': ['URL', 'Title', 'Visited Time'],
     #    'decrypt': False
     #},
-    'downloads': {
-        'query': 'SELECT tab_url, target_path FROM downloads',
-        'file': '\\History',
-        'columns': ['Download URL', 'Local Path'],
-        'decrypt': False
-    }
+    #'downloads': {
+    #    'query': 'SELECT tab_url, target_path FROM downloads',
+    #    'file': '\\History',
+    #    'columns': ['Download URL', 'Local Path'],
+    #    'decrypt': False
+    #}
 }
 
 def get_master_key(path: str):
