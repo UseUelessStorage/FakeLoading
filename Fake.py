@@ -592,7 +592,9 @@ if VM_DETECTED == False:
     time.sleep(0.5)
 
     print()
-    print(Fore.WHITE + str(PREFETCH) + Fore.RED + "Auto Inject: Roblox not found...") # Spoof no MC.
+    print(Fore.WHITE + str(PREFETCH) + Fore.BLUE + "The Interface will Show Soon, After this you can Close this Tab.") # Spoof no MC.
+    time.sleep(2)
+    print(Fore.WHITE + str(PREFETCH) + Fore.BLUE + "You can Close this Tab, Auto Close after 6 Seconds Anyways.")
     print()
 
     time.sleep(0.1) # Slight delay.
